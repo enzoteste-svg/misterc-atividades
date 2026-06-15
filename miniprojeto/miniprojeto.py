@@ -80,11 +80,11 @@ class Gerente(Funcionario):
         print(f"Nome : {self.get_nome()} Matricula : {self.get_matricula()} Tipo : Gerente Salario : R$ {salario:.2f}")
 
 
-ana = CLT("Goés", "001", 30.50)
-bruno = Vendedor("Dambros", "002", 2069.00, 12000.00)
-carla = Gerente("Vitoria", "003", 5267.00)
+goes = CLT("Goés", "001", 30.50)
+dambros = Vendedor("Dambros", "002", 2069.00, 12000.00)
+vitoria = Gerente("Vitoria", "003", 5267.00)
 
-lista_funcionarios = [ana, bruno, carla]
+lista_funcionarios = [goes, dambros, vitoria]
 
 print("-" * 65)
 print("SISTEMA DE FOLHA DE PAGAMENTO")
