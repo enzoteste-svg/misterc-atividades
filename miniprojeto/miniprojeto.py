@@ -83,8 +83,9 @@ class Gerente(Funcionario):
 goes = CLT("Goés", "001", 30.50)
 dambros = Vendedor("Dambros", "002", 2069.00, 12000.00)
 vitoria = Gerente("Vitoria", "003", 5267.00)
+pyetro = Gerente("Pyetro", "004", 6600.00)
 
-lista_funcionarios = [goes, dambros, vitoria]
+lista_funcionarios = [goes, dambros, pyetro, vitoria]
 
 print("-" * 65)
 print("SISTEMA DE FOLHA DE PAGAMENTO")
