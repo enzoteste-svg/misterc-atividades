@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ristorante Italiano</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vermelho: #c1272d;
+            --vermelho-escuro: #8f1d22;
+            --verde: #1e7d4f;
+            --creme: #faf5ec;
+            --marrom: #3f2d24;
+            --cinza: #6b5d53;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--creme);
+            color: var(--marrom);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--vermelho), var(--vermelho-escuro));
+            color: #fff;
+            text-align: center;
+            padding: 40px 20px 30px;
+        }
+
+        .flag {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .flag span { width: 30px; height: 20px; border-radius: 3px; }
+        .flag span:nth-child(1) { background: #1e7d4f; }
+        .flag span:nth-child(2) { background: #fff; }
+        .flag span:nth-child(3) { background: #c1272d; }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            letter-spacing: 1px;
+        }
+
+        header p { margin-top: 6px; opacity: .9; }
+
+        .busca {
+            max-width: 1000px;
+            margin: 26px auto 0;
+            padding: 0 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .busca input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e3d5c3;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            background: #fff;
+            font-family: inherit;
+        }
+        .busca input:focus { border-color: var(--verde); }
+
+        .busca button {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform .15s;
+        }
+        .busca .buscar { background: var(--verde); color: #fff; }
+        .busca .limpar { background: #e3d5c3; color: var(--marrom); }
+        .busca button:hover { transform: translateY(-2px); }
+
+        main {
+            max-width: 1000px;
+            margin: 30px auto 60px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--vermelho);
+            margin-bottom: 14px;
+            font-size: 24px;
+        }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            background: #fff;
+            border: 2px solid #e3d5c3;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .grades {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 18px;
+            border-top: 5px solid var(--verde);
+            box-shadow: 0 4px 14px rgba(63, 45, 36, .08);
+            transition: transform .2s;
+        }
+        .card:hover { transform: translateY(-4px); }
+
+        .badge {
+            display: inline-block;
+            background: var(--vermelho);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .card h3 { margin-bottom: 6px; }
+        .card p { color: var(--cinza); font-size: 14px; min-height: 38px; margin-bottom: 10px; }
+        .card strong { color: var(--verde); font-size: 18px; }
+
+        .vazio { color: var(--cinza); }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: var(--cinza);
+            background: #efe6d8;
+        }
+
+        @media (max-width: 760px) {
+            main { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="flag"><span></span><span></span><span></span></div>
+        <h1>Ristorante Italiano</h1>
+        <p>Cardápio do restaurante - dados vêm da API (Flask + SQLite)</p>
+    </header>
+
+    <div class="busca">
+        <input id="campoBusca" type="text" placeholder="Buscar um prato... (ex: pizza)">
+        <button class="buscar" onclick="buscar()">Buscar</button>
+        <button class="limpar" onclick="limpar()">Mostrar tudo</button>
+    </div>
+
+    <main>
+        <aside>
+            <h2>Categorias</h2>
+            <div id="categorias" class="chips"></div>
+        </aside>
+
+        <section>
+            <h2 id="tituloPratos">Pratos</h2>
+            <div id="pratos" class="grades"></div>
+        </section>
+    </main>
+
+    <footer>API Restaurante Italiano - feito com Flask e SQLite</footer>
+
+    <script>
+        // guarda o id de cada categoria para achar o nome
+        var mapaCategorias = {};
+
+        // carrega categorias e pratos quando a pagina abre
+        carregarTudo();
+
+        async function carregarTudo() {
+            await carregarCategorias();
+            mostrarTodos();
+        }
+
+        // busca as categorias na API (GET /categorias)
+        async function carregarCategorias() {
+            var resposta = await fetch('/categorias');
+            var categorias = await resposta.json();
+
+            var div = document.getElementById('categorias');
+            div.innerHTML = '';
+
+            categorias.forEach(function (c) {
+                mapaCategorias[c.id] = c.nome;
+
+                var chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.textContent = c.nome;
+                div.appendChild(chip);
+            });
+        }
+
+        // mostra todos os pratos usando o JOIN (GET /pratos/join)
+        async function mostrarTodos() {
+            document.getElementById('tituloPratos').textContent = 'Pratos';
+            var resposta = await fetch('/pratos/join');
+            var pratos = await resposta.json();
+            renderizar(pratos);
+        }
+
+        // pesquisa por nome usando a busca da API (GET /pratos/busca?nome=...)
+        async function buscar() {
+            var nome = document.getElementById('campoBusca').value.trim();
+            if (!nome) {
+                mostrarTodos();
+                return;
+            }
+
+            document.getElementById('tituloPratos').textContent = 'Resultados para: "' + nome + '"';
+            var resposta = await fetch('/pratos/busca?nome=' + encodeURIComponent(nome));
+            var pratos = await resposta.json();
+            renderizar(pratos);
+        }
+
+        function limpar() {
+            document.getElementById('campoBusca').value = '';
+            mostrarTodos();
+        }
+
+        // desenha os cards de cada prato
+        function renderizar(pratos) {
+            var div = document.getElementById('pratos');
+            div.innerHTML = '';
+
+            if (pratos.length === 0) {
+                div.innerHTML = '<p class="vazio">Nenhum prato encontrado :(</p>';
+                return;
+            }
+
+            pratos.forEach(function (p) {
+                var nomeCategoria = p.categoria || mapaCategorias[p.categoria_id] || 'Sem categoria';
+
+                var card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML =
+                    '<span class="badge">' + nomeCategoria + '</span>' +
+                    '<h3>' + p.nome + '</h3>' +
+                    '<p>' + (p.descricao || 'Sem descrição') + '</p>' +
+                    '<strong>R$ ' + Number(p.preco).toFixed(2) + '</strong>';
+                div.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
