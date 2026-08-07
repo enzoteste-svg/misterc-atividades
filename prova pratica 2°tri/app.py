@@ -25,9 +25,6 @@ def site():
     return render_template("index.html")
 
 
-# ====================== CATEGORIAS ======================
-
-# GET /categorias - lista todas
 @app.route("/categorias", methods=["GET"])
 def listar_categorias():
     conn = get_conn()
@@ -44,8 +41,6 @@ def listar_categorias():
 @app.route("/categorias/<int:id>", methods=["GET"])
 def ver_categoria(id):
     conn = get_conn()
-    # o "?" e um parametro, assim o valor nunca vai junto do SQL
-    # (isso evita SQL Injection)
     c = conn.execute("SELECT * FROM categorias WHERE id = ?", (id,)).fetchone()
     conn.close()
 
@@ -55,7 +50,6 @@ def ver_categoria(id):
     return jsonify({"id": c["id"], "nome": c["nome"]})
 
 
-# POST /categorias - cria uma nova
 @app.route("/categorias", methods=["POST"])
 def criar_categoria():
     dados = request.get_json(silent=True)
@@ -71,7 +65,6 @@ def criar_categoria():
     return jsonify({"id": nova["id"], "nome": nova["nome"]}), 201
 
 
-# PUT /categorias/1 - atualiza o nome
 @app.route("/categorias/<int:id>", methods=["PUT"])
 def editar_categoria(id):
     dados = request.get_json(silent=True)
@@ -100,16 +93,11 @@ def apagar_categoria(id):
     conn.commit()
     conn.close()
 
-    # rowcount = quantas linhas foram apagadas
     if cur.rowcount == 0:
         return jsonify({"erro": "Categoria nao encontrada"}), 404
 
     return jsonify({"mensagem": "Categoria apagada (e os pratos dela junto)"})
 
-
-# ====================== PRATOS ======================
-
-# GET /pratos - lista todos
 @app.route("/pratos", methods=["GET"])
 def listar_pratos():
     conn = get_conn()
@@ -119,7 +107,6 @@ def listar_pratos():
     return jsonify(pratos_para_json(linhas))
 
 
-# GET /pratos/1 - mostra um so
 @app.route("/pratos/<int:id>", methods=["GET"])
 def ver_prato(id):
     conn = get_conn()
@@ -137,22 +124,17 @@ def ver_prato(id):
         "categoria_id": p["categoria_id"],
     })
 
-
-# POST /pratos - cria um novo
 @app.route("/pratos", methods=["POST"])
 def criar_prato():
     dados = request.get_json(silent=True)
     if not dados:
         return jsonify({"erro": "Envie os dados em JSON"}), 400
-
-    # campos que nao podem faltar
     for campo in ("nome", "preco", "categoria_id"):
         if campo not in dados:
             return jsonify({"erro": "O campo " + campo + " e obrigatorio"}), 400
 
     conn = get_conn()
 
-    # confere se a categoria do prato existe
     cat = conn.execute("SELECT id FROM categorias WHERE id = ?", (dados["categoria_id"],)).fetchone()
     if cat is None:
         conn.close()
@@ -174,8 +156,6 @@ def criar_prato():
         "categoria_id": novo["categoria_id"],
     }), 201
 
-
-# PUT /pratos/1 - atualiza um prato
 @app.route("/pratos/<int:id>", methods=["PUT"])
 def editar_prato(id):
     dados = request.get_json(silent=True)
@@ -188,13 +168,11 @@ def editar_prato(id):
         conn.close()
         return jsonify({"erro": "Prato nao encontrado"}), 404
 
-    # pega o que veio no JSON, e se nao veio, mantem o que ja tinha
     nome = dados.get("nome", p["nome"])
     descricao = dados.get("descricao", p["descricao"])
     preco = dados.get("preco", p["preco"])
     categoria_id = dados.get("categoria_id", p["categoria_id"])
 
-    # se for mudar a categoria, confere se ela existe
     if "categoria_id" in dados:
         cat = conn.execute("SELECT id FROM categorias WHERE id = ?", (categoria_id,)).fetchone()
         if cat is None:
@@ -217,8 +195,6 @@ def editar_prato(id):
         "categoria_id": atualizado["categoria_id"],
     })
 
-
-# DELETE /pratos/1 - apaga um prato
 @app.route("/pratos/<int:id>", methods=["DELETE"])
 def apagar_prato(id):
     conn = get_conn()
@@ -231,12 +207,6 @@ def apagar_prato(id):
 
     return jsonify({"mensagem": "Prato apagado"})
 
-
-# ====================== JOIN ======================
-
-# GET /pratos/join - mostra os pratos com o nome da categoria
-# INNER JOIN junta as duas tabelas pelo id da categoria
-@app.route("/pratos/join", methods=["GET"])
 def pratos_com_categoria():
     conn = get_conn()
     linhas = conn.execute("""
@@ -259,41 +229,30 @@ def pratos_com_categoria():
         })
     return jsonify(lista)
 
-
-# ====================== FILTROS ======================
-
-# GET /categorias/2/pratos - todos os pratos de uma categoria
 @app.route("/categorias/<int:id>/pratos", methods=["GET"])
 def pratos_da_categoria(id):
     conn = get_conn()
 
-    # confere se a categoria existe
     cat = conn.execute("SELECT * FROM categorias WHERE id = ?", (id,)).fetchone()
     if cat is None:
         conn.close()
         return jsonify({"erro": "Categoria nao encontrada"}), 404
 
-    # filtra os pratos por categoria_id
     linhas = conn.execute("SELECT * FROM pratos WHERE categoria_id = ? ORDER BY id", (id,)).fetchall()
     conn.close()
 
     return jsonify(pratos_para_json(linhas))
 
-
-# GET /pratos/busca?nome=pizza - procura pelo nome com LIKE
-# aceita varios filtros juntos: nome, preco (minimo) e preco_max
 @app.route("/pratos/busca", methods=["GET"])
 def buscar_pratos():
     nome = request.args.get("nome", "")
     preco = request.args.get("preco")
     preco_max = request.args.get("preco_max")
 
-    # o WHERE 1=1 deixa a gente ir juntando os filtros com AND
     sql = "SELECT * FROM pratos WHERE 1=1"
     valores = []
 
     if nome:
-        # LIKE com % procura em qualquer parte do nome
         sql += " AND nome LIKE ? COLLATE NOCASE"
         valores.append("%" + nome + "%")
 
@@ -313,11 +272,6 @@ def buscar_pratos():
 
     return jsonify(pratos_para_json(linhas))
 
-
-# ====================== LEFT JOIN (extra) ======================
-
-# GET /categorias/com-pratos - todas as categorias com os pratos dela
-# LEFT JOIN mostra tambem as categorias que nao tem prato
 @app.route("/categorias/com-pratos", methods=["GET"])
 def categorias_com_pratos():
     conn = get_conn()
@@ -331,7 +285,6 @@ def categorias_com_pratos():
 
     resultado = []
     for l in linhas:
-        # procura se essa categoria ja esta na lista
         achou = False
         for cat in resultado:
             if cat["id"] == l["id"]:
@@ -339,8 +292,6 @@ def categorias_com_pratos():
                     cat["pratos"].append(l["nome_prato"])
                 achou = True
                 break
-
-        # se nao estava, cria uma nova
         if not achou:
             pratos = []
             if l["nome_prato"]:
