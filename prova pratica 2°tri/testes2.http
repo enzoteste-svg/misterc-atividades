@@ -1,0 +1,88 @@
+GET http://localhost:5000/
+
+GET http://localhost:5000/categorias
+
+GET http://localhost:5000/categorias/1
+
+GET http://localhost:5000/categorias/999
+
+POST http://localhost:5000/categorias
+Content-Type: application/json
+
+{
+  "nome": "Entradas"
+}
+
+POST http://localhost:5000/categorias
+Content-Type: application/json
+
+{
+  "preco": 10
+}
+
+PUT http://localhost:5000/categorias/2
+Content-Type: application/json
+
+{
+  "nome": "Pizzas Artesanais"
+}
+
+DELETE http://localhost:5000/categorias/9
+
+DELETE http://localhost:5000/categorias/999
+
+GET http://localhost:5000/pratos
+GET http://localhost:5000/pratos/1
+GET http://localhost:5000/pratos/999
+
+POST http://localhost:5000/pratos
+Content-Type: application/json
+
+{
+  "nome": "Spaghetti Carbonara",
+  "descricao": "Massa com pancetta e molho de ovos",
+  "preco": 64.90,
+  "categoria_id": 1
+}
+
+POST http://localhost:5000/pratos
+Content-Type: application/json
+
+{
+  "nome": "Prato sem preco"
+}
+
+POST http://localhost:5000/pratos
+Content-Type: application/json
+
+{
+  "nome": "Prato Invalido",
+  "preco": 10.00,
+  "categoria_id": 999
+}
+
+PUT http://localhost:5000/pratos/2
+Content-Type: application/json
+
+{
+  "preco": 58.90
+}
+
+DELETE http://localhost:5000/pratos/12
+
+
+GET http://localhost:5000/pratos/join
+
+GET http://localhost:5000/categorias/2/pratos
+
+GET http://localhost:5000/categorias/999/pratos
+
+GET http://localhost:5000/pratos/busca?nome=pizza
+
+GET http://localhost:5000/pratos/busca?nome=pizza&preco=50
+
+GET http://localhost:5000/pratos/busca?preco=10&preco_max=60
+
+GET http://localhost:5000/pratos/busca
+
+GET http://localhost:5000/categorias/com-pratos
