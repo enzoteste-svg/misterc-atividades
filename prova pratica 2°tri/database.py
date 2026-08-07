@@ -1,29 +1,17 @@
-# database.py
-# Cria o banco de dados SQLite do restaurante
-# e coloca os dados iniciais (categorias e pratos)
-
 import sqlite3
-
-# nome do arquivo do banco
 DB = "restaurante.db"
 
 
 def get_conn():
-    # abre a conexao com o banco
     conn = sqlite3.connect(DB)
-    # row_factory deixa pegar os campos pelo nome: linha["nome"]
     conn.row_factory = sqlite3.Row
-    # ativa a chave estrangeira (sem isso o CASCADE nao funciona)
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 
 def criar_banco():
     conn = get_conn()
-
-    # cria as tabelas se ainda nao existirem
-    # pratos tem uma FOREIGN KEY que aponta para categorias(id)
-    # ON DELETE CASCADE: apagou a categoria, apaga os pratos dela junto
+    
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS categorias (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +28,6 @@ def criar_banco():
         );
     """)
 
-    # categorias iniciais (so entra se a tabela estiver vazia)
     total = conn.execute("SELECT COUNT(*) FROM categorias").fetchone()[0]
     if total == 0:
         conn.execute("INSERT INTO categorias (nome) VALUES ('Massas')")
@@ -49,10 +36,8 @@ def criar_banco():
         conn.execute("INSERT INTO categorias (nome) VALUES ('Bebidas')")
         conn.execute("INSERT INTO categorias (nome) VALUES ('Vinhos')")
 
-    # pratos iniciais (so entra se a tabela estiver vazia)
     total = conn.execute("SELECT COUNT(*) FROM pratos").fetchone()[0]
     if total == 0:
-        # pega o id de cada categoria pelo nome
         massas = conn.execute("SELECT id FROM categorias WHERE nome = 'Massas'").fetchone()[0]
         pizzas = conn.execute("SELECT id FROM categorias WHERE nome = 'Pizzas'").fetchone()[0]
         sobremesas = conn.execute("SELECT id FROM categorias WHERE nome = 'Sobremesas'").fetchone()[0]
