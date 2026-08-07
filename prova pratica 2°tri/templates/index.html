@@ -184,18 +184,13 @@
     <footer>API Restaurante Italiano - feito com Flask e SQLite</footer>
 
     <script>
-        // guarda o id de cada categoria para achar o nome
         var mapaCategorias = {};
-
-        // carrega categorias e pratos quando a pagina abre
         carregarTudo();
 
         async function carregarTudo() {
             await carregarCategorias();
             mostrarTodos();
         }
-
-        // busca as categorias na API (GET /categorias)
         async function carregarCategorias() {
             var resposta = await fetch('/categorias');
             var categorias = await resposta.json();
@@ -212,8 +207,6 @@
                 div.appendChild(chip);
             });
         }
-
-        // mostra todos os pratos usando o JOIN (GET /pratos/join)
         async function mostrarTodos() {
             document.getElementById('tituloPratos').textContent = 'Pratos';
             var resposta = await fetch('/pratos/join');
@@ -221,7 +214,6 @@
             renderizar(pratos);
         }
 
-        // pesquisa por nome usando a busca da API (GET /pratos/busca?nome=...)
         async function buscar() {
             var nome = document.getElementById('campoBusca').value.trim();
             if (!nome) {
